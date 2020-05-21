@@ -59,9 +59,21 @@ spec:
               type: string
             memoryRequest:
               type: string
+            nodeSelectorLabels:
+              additionalProperties:
+                type: string
+              type: object
             policy:
               type: string
+            replicas:
+              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                Important: Run "operator-sdk generate k8s" to regenerate code after
+                modifying this file'
+              format: int32
+              type: integer
             serverConfig:
+              type: string
+            serviceAccountName:
               type: string
             setDBParms:
               type: string
@@ -84,8 +96,11 @@ spec:
           - logFormat
           - memoryLimit
           - memoryRequest
+          - nodeSelectorLabels
           - policy
+          - replicas
           - serverConfig
+          - serviceAccountName
           - setDBParms
           - truststore
           - webusers
