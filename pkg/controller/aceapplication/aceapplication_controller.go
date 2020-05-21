@@ -3,6 +3,7 @@ package aceapplication
 import (
 	"context"
 	v1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	ibmacedraynerv1alpha1 "operators/ace-app-operator/pkg/apis/ibmacedrayner/v1alpha1"
 
@@ -104,8 +105,10 @@ func (r *ReconcileAceApplication) Reconcile(request reconcile.Request) (reconcil
 	}
 
 	// Define a new deploy object
-	deploy := newDeployForCR(instance)
-
+	deploy, err := newDeployForCR(instance)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
 	// Set AceApplication instance as the owner and controller
 	if err := controllerutil.SetControllerReference(instance, deploy, r.scheme); err != nil {
 		return reconcile.Result{}, err
@@ -132,7 +135,7 @@ func (r *ReconcileAceApplication) Reconcile(request reconcile.Request) (reconcil
 	return reconcile.Result{}, nil
 }
 
-func newDeployForCR(aceApp *ibmacedraynerv1alpha1.AceApplication) *v1.Deployment {
+func newDeployForCR(aceApp *ibmacedraynerv1alpha1.AceApplication) (*v1.Deployment, error) {
 	labels := map[string]string{
 		"app": aceApp.Name,
 	}
@@ -143,6 +146,27 @@ func newDeployForCR(aceApp *ibmacedraynerv1alpha1.AceApplication) *v1.Deployment
 	labelSelector := metav1.LabelSelector{
 		MatchLabels:      labels,
 	}
+
+	cpuResourceLimit, err := resource.ParseQuantity(aceApp.Spec.CpuLimit)
+	if err != nil {
+		return nil, err
+	}
+
+	cpuResourceRequest, err := resource.ParseQuantity(aceApp.Spec.CpuRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	memoryResourceLimit, err := resource.ParseQuantity(aceApp.Spec.MemoryLimit)
+	if err != nil {
+		return nil, err
+	}
+
+	memoryResourceRequest, err := resource.ParseQuantity(aceApp.Spec.MemoryRequest)
+	if err != nil {
+		return nil, err
+	}
+
 
 	template := corev1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
@@ -161,7 +185,16 @@ func newDeployForCR(aceApp *ibmacedraynerv1alpha1.AceApplication) *v1.Deployment
 					Ports:                    nil,
 					EnvFrom:                  nil,
 					Env:                      nil,
-					Resources:                corev1.ResourceRequirements{},
+					Resources:                corev1.ResourceRequirements{
+						Limits:   map[corev1.ResourceName]resource.Quantity {
+							corev1.ResourceCPU : cpuResourceLimit,
+							corev1.ResourceMemory : memoryResourceLimit,
+						},
+						Requests: map[corev1.ResourceName]resource.Quantity {
+							corev1.ResourceCPU : cpuResourceRequest,
+							corev1.ResourceMemory : memoryResourceRequest,
+						},
+					},
 					VolumeMounts:             nil,
 					VolumeDevices:            nil,
 					LivenessProbe:            nil,
