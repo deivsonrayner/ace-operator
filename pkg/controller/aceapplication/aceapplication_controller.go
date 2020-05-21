@@ -184,7 +184,33 @@ func newDeployForCR(aceApp *ibmacedraynerv1alpha1.AceApplication) (*v1.Deploymen
 					Args:                     nil,
 					Ports:                    nil,
 					EnvFrom:                  nil,
-					Env:                      nil,
+					Env:                      []corev1.EnvVar{
+						{
+							Name:      "LICENSE",
+							Value:     aceApp.Spec.License,
+						},
+						{
+							Name:      "ACE_SERVER_NAME",
+							Value:     aceApp.Spec.AceServerName,
+						},
+						{
+							Name:      "ACE_TRUSTSTORE_PASSWORD",
+							Value:     aceApp.Spec.AceTruststorePwd,
+						},
+						{
+							Name:      "ACE_KEYSTORE_PASSWORD",
+							Value:     aceApp.Spec.AceKeystorePwd,
+						},
+						{
+							Name:      "LOG_FORMAT",
+							Value:     aceApp.Spec.LogFormat,
+						},
+						{
+							Name:      "ACE_ENABLE_METRICS",
+							Value:     aceApp.Spec.EnableMetrics,
+						},
+
+					},
 					Resources:                corev1.ResourceRequirements{
 						Limits:   map[corev1.ResourceName]resource.Quantity {
 							corev1.ResourceCPU : cpuResourceLimit,
