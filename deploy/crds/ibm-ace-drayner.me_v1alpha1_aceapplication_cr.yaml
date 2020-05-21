@@ -1,0 +1,7 @@
+apiVersion: ibm-ace-drayner.me/v1alpha1
+kind: AceApplication
+metadata:
+  name: example-aceapplication
+spec:
+  # Add fields here
+  size: 3

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ace-app-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ace-app-operator
+  template:
+    metadata:
+      labels:
+        name: ace-app-operator
+    spec:
+      serviceAccountName: ace-app-operator
+      containers:
+        - name: ace-app-operator
+          # Replace this with the built image name
+          image: REPLACE_IMAGE
+          command:
+          - ace-app-operator
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "ace-app-operator"
